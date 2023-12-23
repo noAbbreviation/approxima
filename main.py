@@ -1,15 +1,23 @@
+from math import *
 from preferredwaveplayer import *
 from datetime import datetime
 
+# todo: tell afternoon, midnight times
+# todo: combine to a tmp wav file, then play all at once
 def main():
     time_string = datetime.now().time()
 
     [hour, minute, second] = str(time_string).split(":")
 
-    (new_hour, mood) = hour_and_mood(hour)
+    # [hour, minute, second] = [1, 18, 1]
     (precedence, new_minute) = precedence_and_minutes(minute)
 
-    print("test")
+    if precedence == "before":
+        new_hour = int(hour) + 1
+    else:
+        new_hour = int(hour)
+
+    (new_hour, mood) = hour_and_mood(new_hour)
 
     play_completely("assets/in-between/the.wav")
     play_completely("assets/mood/{0}.wav".format(mood))
@@ -17,7 +25,7 @@ def main():
 
     play_completely("assets/minutes/{0}.wav".format(new_minute))
     
-    if precedence != None:
+    if precedence != None and new_minute != "around":
         play_completely("assets/minutes/-connect-minutes.wav")
         play_completely("assets/precedence/{0}.wav".format(precedence))
 
@@ -33,20 +41,26 @@ def hour_and_mood(hour_raw):
     if hour_int == 0:
         hour_int = 12
 
-    return (hour_int, mood)
+    return (hour_int % 12, mood)
 
 def precedence_and_minutes(minutes_raw):
-    approx = 60 - (round(1.0 * int(minutes_raw) / 5) * 5)
-
-    if approx == 0:
-        return ("before", "around")
-    elif approx == 30:
-        return (None, "halfway-through")
-    elif approx < 30:
-        return ("before", str(approx))
+    approximate = float(minutes_raw) % 5
+    if approximate > 2:
+        increment = 1
     else:
-        return ("after", str(approx % 30))
+        increment = 0
+    chunk = floor(float(minutes_raw) / 5)
+    approx_chunk = (chunk + increment) * 5
+    print(approx_chunk)
 
+    if approx_chunk == 0:
+        return ("before", "around")
+    elif approx_chunk == 30:
+        return (None, "halfway-through")
+    elif approx_chunk > 30:
+        return ("before", str(30 - (approx_chunk % 30)))
+    else:
+        return ("after", str(approx_chunk))
 
 def play_completely(file_name):
     sound = playwave(file_name)
