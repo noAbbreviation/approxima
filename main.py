@@ -25,7 +25,7 @@ def main():
 
     play_completely("assets/minutes/{0}.wav".format(new_minute))
     
-    if precedence != None and new_minute != "around":
+    if precedence != None:
         play_completely("assets/minutes/-connect-minutes.wav")
         play_completely("assets/precedence/{0}.wav".format(precedence))
 
@@ -41,7 +41,7 @@ def hour_and_mood(hour_raw):
     if hour_int == 0:
         hour_int = 12
 
-    return (hour_int % 12, mood)
+    return (hour_int, mood)
 
 def precedence_and_minutes(minutes_raw):
     approximate = float(minutes_raw) % 5
@@ -54,7 +54,7 @@ def precedence_and_minutes(minutes_raw):
     print(approx_chunk)
 
     if approx_chunk == 0:
-        return ("before", "around")
+        return (None, "around")
     elif approx_chunk == 30:
         return (None, "halfway-through")
     elif approx_chunk > 30:
