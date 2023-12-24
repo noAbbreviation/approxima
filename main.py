@@ -1,9 +1,10 @@
 from math import *
-from preferredwaveplayer import *
 from datetime import datetime
+from preferredwaveplayer import *
+import wave
+OUTFILE = "current_time.temp.wav"
 
 # todo: tell afternoon, midnight times
-# todo: combine to a tmp wav file, then play all at once
 def main():
     time_string = datetime.now().time()
 
@@ -19,17 +20,21 @@ def main():
 
     (new_hour, mood) = hour_and_mood(new_hour)
 
-    play_completely("assets/in-between/the.wav")
-    play_completely("assets/mood/{0}.wav".format(mood))
-    play_completely("assets/in-between/is.wav")
-
-    play_completely("assets/minutes/{0}.wav".format(new_minute))
-    
+    wav_files = [
+        "assets/in-between/the.wav",
+        "assets/mood/{0}.wav".format(mood),
+        "assets/in-between/is.wav",
+        "assets/minutes/{0}.wav".format(new_minute)
+    ]
     if precedence != None:
-        play_completely("assets/minutes/-connect-minutes.wav")
-        play_completely("assets/precedence/{0}.wav".format(precedence))
+        wav_files += [
+            "assets/minutes/-connect-minutes.wav",
+            "assets/precedence/{0}.wav".format(precedence)
+        ]
+    wav_files += ["assets/hour/{0}.wav".format(new_hour)]
 
-    play_completely("assets/hour/{0}.wav".format(new_hour))
+    append_wav_files(wav_files)
+    play_completely(OUTFILE)
     
 def hour_and_mood(hour_raw):
     hour_int = int(hour_raw)
@@ -70,6 +75,23 @@ def play_completely(file_name):
     while getIsPlaying(sound):
         continue
 
+# https://stackoverflow.com/questions/61499350/combine-audio-files-in-python
+def append_wav_files(wav_files):
+    global OUTFILE
+
+    combined_data = []
+    print(wav_files)
+    for wav_file in wav_files:
+        w = wave.open(wav_file, 'rb')
+        combined_data.append( [w.getparams(), w.readframes(w.getnframes())] )
+        w.close()
+
+    output = wave.open(OUTFILE, 'wb')
+    output.setparams(combined_data[0][0])
+
+    for data_point in combined_data:
+        output.writeframes(data_point[1])
+    output.close()
 
 if __name__ == "__main__":
     main()
