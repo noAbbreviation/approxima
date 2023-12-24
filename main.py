@@ -52,13 +52,12 @@ def hour_and_mood(hour_raw):
 
 def precedence_and_minutes(minutes_raw):
     approximate = float(minutes_raw) % 5
+    increment = 0
     if approximate > 2:
-        increment = 1
-    else:
-        increment = 0
+        increment += 1
+
     chunk = floor(float(minutes_raw) / 5)
     approx_chunk = (chunk + increment) * 5
-    print(approx_chunk)
 
     if approx_chunk == 0:
         return (None, "around")
@@ -80,7 +79,6 @@ def append_wav_files(wav_files):
     global OUTFILE
 
     combined_data = []
-    print(wav_files)
     for wav_file in wav_files:
         w = wave.open(wav_file, 'rb')
         combined_data.append( [w.getparams(), w.readframes(w.getnframes())] )
