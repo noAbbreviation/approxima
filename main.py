@@ -38,8 +38,10 @@ def hour_and_mood(hour_raw):
     else:
         mood = "day"
     
-    if hour_int == 0:
+    if hour_int == 0 or hour_int == 24:
         hour_int = 12
+    else:
+        hour_int %= 12
 
     return (hour_int, mood)
 
