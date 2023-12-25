@@ -29,7 +29,7 @@ def main():
 		]
 	wav_files += ["assets/hour/{0}.wav".format(new_hour)]
 
-	append_wav_files(wav_files)
+	append_to_outfile(wav_files)
 	print_speech(wav_files)
 	play_completely(OUTFILE)
 	
@@ -81,7 +81,7 @@ def play_completely(file_name):
 		continue
 
 # https://stackoverflow.com/questions/61499350/combine-audio-files-in-python
-def append_wav_files(wav_files):
+def append_to_outfile(wav_files):
 	global OUTFILE
 
 	combined_data = []
