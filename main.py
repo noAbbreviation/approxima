@@ -39,7 +39,7 @@ def hour_and_mood(hour_int):
 	else:
 		mood = "day"
 	
-	if hour_int == 0 or hour_int == 24:
+	if hour_int % 12 == 0:
 		hour_int = 12
 	else:
 		hour_int %= 12
