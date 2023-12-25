@@ -30,6 +30,7 @@ def main():
 	wav_files += ["assets/hour/{0}.wav".format(new_hour)]
 
 	append_wav_files(wav_files)
+	print_speech(wav_files)
 	play_completely(OUTFILE)
 	
 def hour_and_mood(hour_int):
@@ -100,6 +101,14 @@ def append_wav_files(wav_files):
 	for data_point in combined_data:
 		output.writeframes(data_point[1])
 	output.close()
+
+def print_speech(wav_file_paths):
+	for wav_file in wav_file_paths:
+		print(wav_file
+			.split("/")[-1] \
+			.split(".")[0] \
+			.split("-")[-1]
+		)
 
 if __name__ == "__main__":
 	main()
