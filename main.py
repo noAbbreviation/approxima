@@ -104,11 +104,15 @@ def append_to_outfile(wav_files):
 
 def print_speech(wav_file_paths):
 	for wav_file in wav_file_paths:
-		print(wav_file
+		speech = wav_file \
 			.split("/")[-1] \
 			.split(".")[0] \
-			.split("-")[-1]
-		)
+		
+		if speech.startswith("-"):
+			speech = speech.split("-")[-1]
+		else:
+			speech = speech.replace("-", "\n")
+		print(speech)
 
 if __name__ == "__main__":
 	main()
