@@ -4,20 +4,14 @@ from preferredwaveplayer import *
 import wave
 OUTFILE = "current_time.temp.wav"
 
-# todo: tell afternoon, midnight times
+# todo: command line arguments to use slow assets
 def main():
     time_string = datetime.now().time()
 
     [hour, minute, second] = str(time_string).split(":")
 
     # [hour, minute, second] = [1, 18, 1]
-    (precedence, new_minute) = precedence_and_minutes(minute)
-
-    if precedence == "before":
-        new_hour = int(hour) + 1
-    else:
-        new_hour = int(hour)
-
+    (precedence, new_hour, new_minute) = precedence_hour_minutes(hour, minute)
     (new_hour, mood) = hour_and_mood(new_hour)
 
     wav_files = [
@@ -36,8 +30,7 @@ def main():
     append_wav_files(wav_files)
     play_completely(OUTFILE)
     
-def hour_and_mood(hour_raw):
-    hour_int = int(hour_raw)
+def hour_and_mood(hour_int):
     if hour_int > 12 or hour_int == 0:
         mood = "night"
     else:
@@ -50,23 +43,33 @@ def hour_and_mood(hour_raw):
 
     return (hour_int, mood)
 
-def precedence_and_minutes(minutes_raw):
+def precedence_hour_minutes(hour_raw, minutes_raw):
     approximate = float(minutes_raw) % 5
+    
     increment = 0
     if approximate > 2:
         increment += 1
 
     chunk = floor(float(minutes_raw) / 5)
     approx_chunk = (chunk + increment) * 5
-
+    
+    new_hour = int(hour_raw)
+    
     if approx_chunk == 0:
-        return (None, "around")
-    elif approx_chunk == 30:
-        return (None, "halfway-through")
-    elif approx_chunk > 30:
-        return ("before", str(30 - (approx_chunk % 30)))
-    else:
-        return ("after", str(approx_chunk))
+        return (None, new_hour, "around")
+    
+    if approx_chunk == 30:
+        return (None, new_hour, "halfway-through")
+    
+    if approx_chunk == 60:
+        new_hour += 1
+        return (None, new_hour, "around")
+
+    if approx_chunk > 30:
+        new_hour += 1
+        return ("before", new_hour, str(30 - (approx_chunk % 30)))
+
+    return ("after", new_hour, str(approx_chunk))
 
 def play_completely(file_name):
     sound = playwave(file_name)
