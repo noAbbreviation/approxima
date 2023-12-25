@@ -3,6 +3,8 @@ from datetime import datetime
 from preferredwaveplayer import *
 import wave
 OUTFILE = "current_time.temp.wav"
+import os.path
+import sys
 
 # todo: command line arguments to use slow assets
 def main():
@@ -83,6 +85,10 @@ def append_wav_files(wav_files):
 
     combined_data = []
     for wav_file in wav_files:
+        if not os.path.isfile(wav_file):
+            print("({0}): ** Fatal ** {1} is not a file.".format("approxima", wav_file))
+            sys.exit(1)
+
         w = wave.open(wav_file, 'rb')
         combined_data.append( [w.getparams(), w.readframes(w.getnframes())] )
         w.close()
