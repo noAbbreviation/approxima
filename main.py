@@ -64,6 +64,25 @@ def set_global_flags(arguments):
 		elif flag == "no-print":
 			to_print = False
 
+		elif flag == "help":
+			usage_file_path = "usage.txt"
+			if not os.path.isfile(usage_file_path):
+				print(
+					"""({0}): ** Fatal ** {1}/{2} is not available.
+					 Please check the original repo for the file."""
+						.format(SCRIPT_NAME, os.getcwd(), usage_file_path)
+						.replace("\t", "")
+						.replace("\n", "")
+				)
+				sys.exit(1)
+			
+			file = open(usage_file_path, "r")
+			file_contents = file.read()
+			print(file_contents)
+
+			file.close()
+			sys.exit(0)
+
 		else:
 			print("({0}): ** Fatal ** \"{1}\" is not a valid argument.".format(SCRIPT_NAME, arg))
 			sys.exit(1)

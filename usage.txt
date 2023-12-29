@@ -1,0 +1,13 @@
+Approxima
+    A command line program to approximately tell time (in chunks of 5 minutes) using Python.
+
+Usage:
+    approxima{.exe} [...options]
+
+Options:
+    --help:
+        Show this help message.
+    --sound / --no-sound:
+        To play or not play sound.
+    --print / --no-print:
+        To print or not print transcription.
