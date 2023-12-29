@@ -2,17 +2,23 @@ from math import *
 from datetime import datetime
 from preferredwaveplayer import *
 import wave
-OUTFILE = "current_time.temp.wav"
 import os
 import sys
 
-# todo: command line arguments to use slow assets
+OUTFILE = "current_time.temp.wav"
+SCRIPT_NAME = "approxima"
+DEFAULT_PLAY_SOUND = True
+DEFAULT_PRINT_TEXT = True
+
+PLAY_SOUND = DEFAULT_PLAY_SOUND 
+PRINT_TEXT = DEFAULT_PRINT_TEXT
 def main():
+	set_global_flags(sys.argv[1:])
+
 	time_string = datetime.now().time()
-
 	[hour, minute, second] = str(time_string).split(":")
-
 	# [hour, minute, second] = [1, 18, 1]
+	
 	(precedence, new_hour, new_minute) = precedence_hour_minutes(hour, minute)
 	(new_hour, mood) = hour_and_mood(new_hour)
 
@@ -30,9 +36,41 @@ def main():
 	wav_files += ["assets/hour/{0}.wav".format(new_hour)]
 
 	append_to_outfile(wav_files)
-	print_speech(wav_files)
-	play_completely(OUTFILE)
-	
+	if PRINT_TEXT:
+		print_speech(wav_files)
+	if PLAY_SOUND:
+		play_completely(OUTFILE)
+
+def set_global_flags(arguments):
+	global SCRIPT_NAME
+	global PLAY_SOUND
+	global PRINT_TEXT
+
+	sound = DEFAULT_PLAY_SOUND
+	to_print = DEFAULT_PRINT_TEXT
+
+	for arg in arguments:
+		if not arg.startswith("--"):
+			print("({0}): ** Fatal ** \"{1}\" is not a valid argument.".format(SCRIPT_NAME, arg))
+			sys.exit(1)
+		flag = arg[2:]		
+
+		if flag == "sound":
+			sound = True
+		elif flag == "no-sound":
+			sound = False
+		elif flag == "print":
+			to_print = True
+		elif flag == "no-print":
+			to_print = False
+
+		else:
+			print("({0}): ** Fatal ** \"{1}\" is not a valid argument.".format(SCRIPT_NAME, arg))
+			sys.exit(1)
+
+	PLAY_SOUND = sound
+	PRINT_TEXT = to_print
+
 def hour_and_mood(hour_int):
 	if hour_int > 12 or hour_int == 0:
 		mood = "night"
@@ -83,12 +121,13 @@ def play_completely(file_name):
 # https://stackoverflow.com/questions/61499350/combine-audio-files-in-python
 def append_to_outfile(wav_files):
 	global OUTFILE
+	global SCRIPT_NAME
 
 	combined_data = []
 	for wav_file in wav_files:
 		if not os.path.isfile(wav_file):
 			print("({0}): ** Fatal ** {1}/{2} is not a file."
-				.format("approxima", os.getcwd(), wav_file))
+				.format(SCRIPT_NAME, os.getcwd(), wav_file))
 			sys.exit(1)
 
 		w = wave.open(wav_file, 'rb')
