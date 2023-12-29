@@ -3,7 +3,7 @@
 A command line program to approximately tell time (in chunks of 5 minutes) using Python.
 
 #### Currently has:
-- Windows executable (`main.exe` and `_internal` directory)
+- Windows executable (Call using cmd does not work)
 - Linux executable (setup needed, steps below)
 
 ## To run:
@@ -22,7 +22,7 @@ $ python main.py
 
 ### Windows
 ```
-$ main.exe
+$ approxima.exe
 ```
 
 ### Linux (Ubuntu)
