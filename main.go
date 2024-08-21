@@ -26,10 +26,12 @@ func main() {
 
 	if testing {
 		timeFmt := "15:04:05"
+
 		mockTime, err := time.Parse(timeFmt, "11:58:29")
 		if err != nil {
 			log.Fatal(err)
 		}
+
 		currentTime = mockTime
 	}
 
@@ -44,7 +46,7 @@ func main() {
 	hour, minute, _ := roundedTime.Clock()
 
 	beforeHalfway := minute < 30
-	minuteOffset := (func() int {
+	minuteOffset := func() int {
 		if minute < 30 {
 			return minute
 		}
@@ -55,16 +57,16 @@ func main() {
 
 		hour += 1
 		return 60 - minute
-	})()
+	}()
 
 	isAM := hour < 12
-	normalizedHour := (func() int {
+	normalizedHour := func() int {
 		if hour == 12 || hour == 0 {
 			return 12
 		}
 
 		return hour % 12
-	})()
+	}()
 
 	approxInstance := Approx{
 		hour:          normalizedHour,
@@ -75,14 +77,14 @@ func main() {
 	fmt.Printf("approx: %+v\n", approxInstance)
 
 	theSound := assetAudioFileName("in-between", "the")
-	moodSound := assetAudioFileName("mood", (func() string {
+	moodSound := assetAudioFileName("mood", func() string {
 		if approxInstance.isAM {
 			return "day"
 		}
 		return "night"
-	})())
+	}())
 	isSound := assetAudioFileName("in-between", "is")
-	minuteValueSound := assetAudioFileName("minutes", (func() string {
+	minuteValueSound := assetAudioFileName("minutes", func() string {
 		minuteOffset := approxInstance.minuteOffset
 
 		if minuteOffset == 0 {
@@ -92,26 +94,31 @@ func main() {
 		}
 
 		return fmt.Sprint(minuteOffset)
-	})())
-	minuteNameSound := (func() string {
+	}())
+	minuteNameSound := func() string {
 		minuteOffset := approxInstance.minuteOffset
-		if minuteOffset != 0 && minuteOffset != 30 {
-			return assetAudioFileName("minutes", "-connect-minutes")
+
+		if minuteOffset == 0 || minuteOffset == 30 {
+			return ""
 		}
-		return ""
-	})()
-	precedenceSound := (func() string {
+
+		return assetAudioFileName("minutes", "-connect-minutes")
+	}()
+	precedenceSound := func() string {
 		minuteOffset := approxInstance.minuteOffset
-		if minuteOffset != 0 && minuteOffset != 30 {
-			return assetAudioFileName("precedence", (func() string {
-				if approxInstance.beforeHalfway {
-					return "after"
-				}
-				return "before"
-			})())
+
+		if minuteOffset == 0 || minuteOffset == 30 {
+			return ""
 		}
-		return ""
-	})()
+
+		return assetAudioFileName("precedence", func() string {
+			if approxInstance.beforeHalfway {
+				return "after"
+			}
+
+			return "before"
+		}())
+	}()
 	hourSound := assetAudioFileName("hour", fmt.Sprint(approxInstance.hour))
 
 	audioFileNames := []string{
@@ -125,13 +132,12 @@ func main() {
 	}
 
 	audioStreamers := []beep.StreamCloser{}
+	var audioFormat beep.Format
 	defer func() {
 		for _, streamer := range audioStreamers {
 			streamer.Close()
 		}
 	}()
-
-	var audioFormat beep.Format
 
 	for _, audioFileName := range audioFileNames {
 		if audioFileName == "" {
