@@ -25,8 +25,8 @@ func main() {
 	testing := false
 
 	if testing {
-		timeFmt := "03:04:05"
-		mockTime, err := time.Parse(timeFmt, "12:22:29")
+		timeFmt := "15:04:05"
+		mockTime, err := time.Parse(timeFmt, "11:58:29")
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -42,22 +42,32 @@ func main() {
 	fmt.Println("roundedTime:", roundedTime)
 
 	hour, minute, _ := roundedTime.Clock()
+
+	beforeHalfway := minute < 30
 	minuteOffset := (func() int {
 		if minute < 30 {
 			return minute
 		}
 
 		if minute == 30 {
-			return 0
+			return 30
 		}
 
+		hour += 1
 		return 60 - minute
 	})()
+
 	isAM := hour < 12
-	beforeHalfway := minute < 30
+	normalizedHour := (func() int {
+		if hour == 12 || hour == 0 {
+			return 12
+		}
+
+		return hour % 12
+	})()
 
 	approxInstance := Approx{
-		hour:          hour,
+		hour:          normalizedHour,
 		minuteOffset:  minuteOffset,
 		isAM:          isAM,
 		beforeHalfway: beforeHalfway,
@@ -80,18 +90,21 @@ func main() {
 		} else if minuteOffset == 30 {
 			return "halfway-through"
 		}
+
 		return fmt.Sprint(minuteOffset)
 	})())
 	minuteNameSound := (func() string {
-		if approxInstance.minuteOffset != 0 {
+		minuteOffset := approxInstance.minuteOffset
+		if minuteOffset != 0 && minuteOffset != 30 {
 			return assetAudioFileName("minutes", "-connect-minutes")
 		}
 		return ""
 	})()
 	precedenceSound := (func() string {
-		if approxInstance.minuteOffset != 0 {
+		minuteOffset := approxInstance.minuteOffset
+		if minuteOffset != 0 && minuteOffset != 30 {
 			return assetAudioFileName("precedence", (func() string {
-				if approxInstance.minuteOffset > 0 {
+				if approxInstance.beforeHalfway {
 					return "after"
 				}
 				return "before"
@@ -110,7 +123,14 @@ func main() {
 		precedenceSound,
 		hourSound,
 	}
-	audioStreamers := []beep.Streamer{}
+
+	audioStreamers := []beep.StreamCloser{}
+	defer func() {
+		for _, streamer := range audioStreamers {
+			streamer.Close()
+		}
+	}()
+
 	var audioFormat beep.Format
 
 	for _, audioFileName := range audioFileNames {
@@ -129,11 +149,10 @@ func main() {
 		audioStreamers = append(audioStreamers, streamer)
 	}
 
-	combinedStream := audioStreamers[0]
+	var combinedStream beep.Streamer = audioStreamers[0]
 	for _, audioStream := range audioStreamers[1:] {
 		combinedStream = beep.Seq(combinedStream, audioStream)
 	}
-	// TODO: defer close stream...
 
 	done := make(chan bool)
 	speaker.Init(audioFormat.SampleRate, audioFormat.SampleRate.N(time.Second/10))
