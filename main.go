@@ -59,9 +59,9 @@ func main() {
 		return 60 - minute
 	}()
 
-	isAM := hour < 12
+	isAM := hour < 12 || (hour == 12 && !beforeHalfway)
 	normalizedHour := func() int {
-		if hour == 12 || hour == 0 {
+		if hour%12 == 0 {
 			return 12
 		}
 
