@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -21,6 +22,9 @@ type Approx struct {
 }
 
 func main() {
+	shortFlag := flag.Bool("short", false, "Shorten the spoken part.")
+	flag.Parse()
+
 	currentTime := time.Now()
 	testing := false
 
@@ -78,10 +82,25 @@ func main() {
 
 	theSound := assetAudioFileName("in-between", "the")
 	moodSound := assetAudioFileName("mood", func() string {
-		if approxInstance.isAM {
-			return "day"
+		var moodVariants map[bool]string
+
+		if *shortFlag {
+			moodVariants = map[bool]string{
+				true:  "am",
+				false: "pm",
+			}
+		} else {
+			moodVariants = map[bool]string{
+				true:  "day",
+				false: "night",
+			}
 		}
-		return "night"
+
+		if approxInstance.isAM {
+			return moodVariants[true]
+		}
+
+		return moodVariants[false]
 	}())
 	isSound := assetAudioFileName("in-between", "is")
 	minuteValueSound := assetAudioFileName("minutes", func() string {
@@ -130,6 +149,14 @@ func main() {
 		precedenceSound,
 		hourSound,
 	}
+	if *shortFlag {
+		audioFileNames = []string{
+			minuteValueSound,
+			precedenceSound,
+			hourSound,
+			moodSound,
+		}
+	}
 
 	audioStreamers := []beep.StreamCloser{}
 	var audioFormat beep.Format
@@ -150,6 +177,9 @@ func main() {
 		}
 
 		streamer, format, err := wav.Decode(audioFile)
+		if err != nil {
+			log.Fatal(err)
+		}
 		audioFormat = format
 
 		audioStreamers = append(audioStreamers, streamer)
