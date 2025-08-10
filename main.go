@@ -7,12 +7,12 @@ import (
 	"os"
 	"time"
 
-	"github.com/gopxl/beep"
-	"github.com/gopxl/beep/speaker"
-	"github.com/gopxl/beep/wav"
+	beep "github.com/gopxl/beep/v2"
+	"github.com/gopxl/beep/v2/speaker"
+	"github.com/gopxl/beep/v2/wav"
 )
 
-const assetFolder = "./assets"
+var assetsFolder string
 
 type Approx struct {
 	hour          int
@@ -23,8 +23,10 @@ type Approx struct {
 
 func main() {
 	shortFlag := flag.Bool("short", false, "Shorten the spoken part.")
+	assetsFolderArgs := flag.String("assets", "./assets", "Folder to show assets")
 	flag.Parse()
 
+	assetsFolder = *assetsFolderArgs
 	currentTime := time.Now()
 	testing := false
 
@@ -200,5 +202,5 @@ func main() {
 }
 
 func assetAudioFileName(category, fileName string) string {
-	return fmt.Sprintf("%s/%s/%s.wav", assetFolder, category, fileName)
+	return fmt.Sprintf("%s/%s/%s.wav", assetsFolder, category, fileName)
 }
