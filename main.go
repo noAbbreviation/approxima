@@ -29,6 +29,7 @@ type Asset struct {
 func main() {
 	shortFlag := flag.Bool("short", false, "Shorten the prompt")
 	assetsFolderArgs := flag.String("assets", "./assets", "Folder to show assets")
+	silentFlag := flag.Bool("silent", false, "Only print the prompt then exit")
 	flag.Parse()
 
 	assetsFolder = *assetsFolderArgs
@@ -186,6 +187,10 @@ func main() {
 		prompt = append(prompt, promptItem)
 	}
 	fmt.Println(strings.Join(prompt, " "))
+
+	if *silentFlag {
+		os.Exit(0)
+	}
 
 	audioStreamers := []beep.StreamCloser{}
 	var audioFormat beep.Format

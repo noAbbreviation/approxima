@@ -13,8 +13,8 @@ TODO: Add video here
 - [x] Shorter time telling Text-To-Speech
 - [x] Customizable assets folder
 - [x] Human readable time, or pipeable to other things
+- [x] No audio flag
 - [-] Background time watcher
-- [ ] No audio flag
 - Capable of custom time telling (via piping of Unix Epoch Time)
 - Embed default sound files to binary
 - Help page
