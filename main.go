@@ -1,10 +1,13 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
+	"io"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -13,7 +16,11 @@ import (
 	"github.com/gopxl/beep/v2/wav"
 )
 
-var assetsFolder string
+var (
+	assetsFolder string
+
+	InvalidTimeFormatE = errors.New("Format should be Unix Time(in seconds).")
+)
 
 type Approx struct {
 	hour          int
@@ -33,8 +40,9 @@ func main() {
 	flag.Parse()
 
 	assetsFolder = *assetsFolderArgs
-	currentTime := time.Now()
 	testing := false
+
+	currentTime := time.Now()
 
 	if testing {
 		timeFmt := "15:04:05"
@@ -47,12 +55,18 @@ func main() {
 		currentTime = mockTime
 	}
 
+	timeToProcess, err := checkPipedStdinForTime(currentTime)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
 	fiveMinutes, err := time.ParseDuration("5m")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	roundedTime := currentTime.Round(fiveMinutes)
+	roundedTime := timeToProcess.Round(fiveMinutes)
 	hour, minute, _ := roundedTime.Clock()
 
 	beforeHalfway := minute < 30
@@ -205,7 +219,7 @@ func main() {
 			continue
 		}
 
-		audioFileName := fileNameFromAsset(audioAsset)
+		audioFileName := fmt.Sprintf("%s/%s/%s.wav", assetsFolder, audioAsset.category, audioAsset.fileName)
 		audioFile, err := os.Open(audioFileName)
 		if err != nil {
 			log.Fatal(err)
@@ -234,6 +248,31 @@ func main() {
 	<-done
 }
 
-func fileNameFromAsset(asset Asset) string {
-	return fmt.Sprintf("%s/%s/%s.wav", assetsFolder, asset.category, asset.fileName)
+func checkPipedStdinForTime(currentTime time.Time) (time.Time, error) {
+	fileStat, err := os.Stdin.Stat()
+	if err != nil {
+		fmt.Println("error reading stardard input:", err)
+		return time.Time{}, err
+	}
+
+	noPipedStdIn := fileStat.Mode()&os.ModeNamedPipe == 0
+	if noPipedStdIn {
+		return currentTime, nil
+	}
+
+	buffer := make([]byte, 32)
+	bufLen, err := os.Stdin.Read(buffer)
+
+	if err != nil && err != io.EOF {
+		return time.Time{}, fmt.Errorf("Reading standard input failed: %v", err)
+	}
+
+	pipedTime := strings.TrimSpace(string(buffer[:bufLen]))
+	seconds, err := strconv.Atoi(pipedTime)
+
+	if err != nil {
+		return time.Time{}, InvalidTimeFormatE
+	}
+
+	return time.Unix(int64(seconds), 0), nil
 }

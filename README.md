@@ -14,7 +14,7 @@ TODO: Add video here
 - [x] Customizable assets folder
 - [x] Human readable time, or pipeable to other things
 - [x] No audio flag
+- [x] Capable of custom time telling (via piping of Unix Epoch Time)
 - [-] Background time watcher
-- Capable of custom time telling (via piping of Unix Epoch Time)
 - Embed default sound files to binary
 - Help page
