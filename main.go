@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"time"
 
 	beep "github.com/gopxl/beep/v2"
@@ -21,8 +22,12 @@ type Approx struct {
 	beforeHalfway bool
 }
 
+type Asset struct {
+	category, fileName string
+}
+
 func main() {
-	shortFlag := flag.Bool("short", false, "Shorten the spoken part.")
+	shortFlag := flag.Bool("short", false, "Shorten the prompt")
 	assetsFolderArgs := flag.String("assets", "./assets", "Folder to show assets")
 	flag.Parse()
 
@@ -47,8 +52,6 @@ func main() {
 	}
 
 	roundedTime := currentTime.Round(fiveMinutes)
-	fmt.Println("roundedTime:", roundedTime)
-
 	hour, minute, _ := roundedTime.Clock()
 
 	beforeHalfway := minute < 30
@@ -80,69 +83,77 @@ func main() {
 		isAM:          isAM,
 		beforeHalfway: beforeHalfway,
 	}
-	fmt.Printf("approx: %+v\n", approxInstance)
 
-	theSound := assetAudioFileName("in-between", "the")
-	moodSound := assetAudioFileName("mood", func() string {
-		var moodVariants map[bool]string
+	theSound := Asset{"in-between", "the"}
+	moodSound := Asset{
+		"mood",
+		func() string {
+			var moodVariants map[bool]string
 
-		if *shortFlag {
-			moodVariants = map[bool]string{
-				true:  "am",
-				false: "pm",
+			if *shortFlag {
+				moodVariants = map[bool]string{
+					true:  "am",
+					false: "pm",
+				}
+			} else {
+				moodVariants = map[bool]string{
+					true:  "day",
+					false: "night",
+				}
 			}
-		} else {
-			moodVariants = map[bool]string{
-				true:  "day",
-				false: "night",
+
+			if approxInstance.isAM {
+				return moodVariants[true]
 			}
-		}
 
-		if approxInstance.isAM {
-			return moodVariants[true]
-		}
+			return moodVariants[false]
+		}(),
+	}
+	isSound := Asset{"in-between", "is"}
+	minuteValueSound := Asset{
+		"minutes",
+		func() string {
+			minuteOffset := approxInstance.minuteOffset
 
-		return moodVariants[false]
-	}())
-	isSound := assetAudioFileName("in-between", "is")
-	minuteValueSound := assetAudioFileName("minutes", func() string {
-		minuteOffset := approxInstance.minuteOffset
+			if minuteOffset == 0 {
+				return "around"
+			} else if minuteOffset == 30 {
+				return "halfway-through"
+			}
 
-		if minuteOffset == 0 {
-			return "around"
-		} else if minuteOffset == 30 {
-			return "halfway-through"
-		}
-
-		return fmt.Sprint(minuteOffset)
-	}())
-	minuteNameSound := func() string {
-		minuteOffset := approxInstance.minuteOffset
-
-		if minuteOffset == 0 || minuteOffset == 30 {
-			return ""
-		}
-
-		return assetAudioFileName("minutes", "-connect-minutes")
-	}()
-	precedenceSound := func() string {
+			return fmt.Sprint(minuteOffset)
+		}(),
+	}
+	minuteNameSound := func() Asset {
 		minuteOffset := approxInstance.minuteOffset
 
 		if minuteOffset == 0 || minuteOffset == 30 {
-			return ""
+			return Asset{}
 		}
 
-		return assetAudioFileName("precedence", func() string {
-			if approxInstance.beforeHalfway {
-				return "after"
-			}
-
-			return "before"
-		}())
+		return Asset{"minutes", "-connect-minutes"}
 	}()
-	hourSound := assetAudioFileName("hour", fmt.Sprint(approxInstance.hour))
+	precedenceSound := func() Asset {
+		minuteOffset := approxInstance.minuteOffset
 
-	audioFileNames := []string{
+		if minuteOffset == 0 || minuteOffset == 30 {
+			return Asset{}
+		}
+
+		return Asset{
+			"precedence",
+			func() string {
+				if approxInstance.beforeHalfway {
+					return "after"
+				}
+
+				return "before"
+			}(),
+		}
+	}()
+	hourSound := Asset{"hour", fmt.Sprint(approxInstance.hour)}
+
+	audioAssets := []Asset{
 		theSound,
 		moodSound,
 		isSound,
@@ -152,13 +163,29 @@ func main() {
 		hourSound,
 	}
 	if *shortFlag {
-		audioFileNames = []string{
+		audioAssets = []Asset{
 			minuteValueSound,
 			precedenceSound,
 			hourSound,
 			moodSound,
 		}
 	}
+
+	prompt := []string{}
+	for _, asset := range audioAssets {
+		if asset.category == "" {
+			continue
+		}
+
+		promptItem := asset.fileName
+		if promptItem[0] == '-' {
+			extractedPromptItem := strings.Split(promptItem, "-")
+			promptItem = extractedPromptItem[len(extractedPromptItem)-1]
+		}
+
+		prompt = append(prompt, promptItem)
+	}
+	fmt.Println(strings.Join(prompt, " "))
 
 	audioStreamers := []beep.StreamCloser{}
 	var audioFormat beep.Format
@@ -168,11 +195,12 @@ func main() {
 		}
 	}()
 
-	for _, audioFileName := range audioFileNames {
-		if audioFileName == "" {
+	for _, audioAsset := range audioAssets {
+		if audioAsset.category == "" {
 			continue
 		}
 
+		audioFileName := fileNameFromAsset(audioAsset)
 		audioFile, err := os.Open(audioFileName)
 		if err != nil {
 			log.Fatal(err)
@@ -201,6 +229,6 @@ func main() {
 	<-done
 }
 
-func assetAudioFileName(category, fileName string) string {
-	return fmt.Sprintf("%s/%s/%s.wav", assetsFolder, category, fileName)
+func fileNameFromAsset(asset Asset) string {
+	return fmt.Sprintf("%s/%s/%s.wav", assetsFolder, asset.category, asset.fileName)
 }
