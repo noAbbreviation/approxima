@@ -39,23 +39,21 @@ func main() {
 	flag.Parse()
 
 	assetsFolder = *assetsFolderArgs
-	testing := false
+	defaultTime := time.Now()
 
-	currentTime := time.Now()
-
-	if testing {
+	if customTimeArg := flag.Arg(0); len(customTimeArg) != 0 {
 		timeFmt := "15:04:05"
 
-		mockTime, err := time.Parse(timeFmt, "11:58:29")
+		customTime, err := time.Parse(timeFmt, customTimeArg)
 		if err != nil {
-			fmt.Println(err)
+			fmt.Println("Error parsing the custom time: Accepted format is \"HH:MM:SS\"")
 			os.Exit(1)
 		}
 
-		currentTime = mockTime
+		defaultTime = customTime
 	}
 
-	timeToProcess, err := checkPipedStdinForTime(currentTime)
+	timeData, err := checkPipedStdinForTime(defaultTime)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
@@ -67,7 +65,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	roundedTime := timeToProcess.Round(fiveMinutes)
+	roundedTime := timeData.Round(fiveMinutes)
 	hour, minute, _ := roundedTime.Clock()
 
 	beforeHalfway := minute < 30
@@ -261,7 +259,7 @@ func main() {
 	}
 }
 
-func checkPipedStdinForTime(currentTime time.Time) (time.Time, error) {
+func checkPipedStdinForTime(defaultTime time.Time) (time.Time, error) {
 	fileStat, err := os.Stdin.Stat()
 	if err != nil {
 		fmt.Println("error reading stardard input:", err)
@@ -270,7 +268,7 @@ func checkPipedStdinForTime(currentTime time.Time) (time.Time, error) {
 
 	noPipedStdIn := fileStat.Mode()&os.ModeNamedPipe == 0
 	if noPipedStdIn {
-		return currentTime, nil
+		return defaultTime, nil
 	}
 
 	buffer := make([]byte, 32)
