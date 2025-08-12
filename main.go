@@ -244,13 +244,21 @@ func main() {
 		combinedStream = beep.Seq(combinedStream, audioStream)
 	}
 
-	done := make(chan bool)
+	speakerDone := make(chan bool)
+	timeout := time.NewTimer(time.Second * 10)
+
 	speaker.Init(audioFormat.SampleRate, audioFormat.SampleRate.N(time.Second/10))
 	speaker.Play(beep.Seq(combinedStream, beep.Callback(func() {
-		done <- true
+		speakerDone <- true
 	})))
 
-	<-done
+	select {
+	case <-timeout.C:
+		fmt.Println("Playback exceeded ten(10) seconds.")
+		os.Exit(1)
+	case <-speakerDone:
+		return
+	}
 }
 
 func checkPipedStdinForTime(currentTime time.Time) (time.Time, error) {
