@@ -5,7 +5,6 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -49,7 +48,8 @@ func main() {
 
 		mockTime, err := time.Parse(timeFmt, "11:58:29")
 		if err != nil {
-			log.Fatal(err)
+			fmt.Println(err)
+			os.Exit(1)
 		}
 
 		currentTime = mockTime
@@ -63,7 +63,8 @@ func main() {
 
 	fiveMinutes, err := time.ParseDuration("5m")
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
+		os.Exit(1)
 	}
 
 	roundedTime := timeToProcess.Round(fiveMinutes)
@@ -79,17 +80,19 @@ func main() {
 			return 30
 		}
 
-		hour += 1
+		hour = (hour + 1) % 24
 		return 60 - minute
 	}()
 
 	isAM := hour < 12 || (hour == 12 && !beforeHalfway)
 	normalizedHour := func() int {
-		if hour%12 == 0 {
+		hour %= 12
+
+		if hour == 0 {
 			return 12
 		}
 
-		return hour % 12
+		return hour
 	}()
 
 	approxInstance := Approx{
@@ -117,11 +120,7 @@ func main() {
 				}
 			}
 
-			if approxInstance.isAM {
-				return moodVariants[true]
-			}
-
-			return moodVariants[false]
+			return moodVariants[approxInstance.isAM]
 		}(),
 	}
 	isSound := Asset{"in-between", "is"}
@@ -132,7 +131,9 @@ func main() {
 
 			if minuteOffset == 0 {
 				return "around"
-			} else if minuteOffset == 30 {
+			}
+
+			if minuteOffset == 30 {
 				return "halfway-through"
 			}
 
@@ -219,15 +220,19 @@ func main() {
 			continue
 		}
 
-		audioFileName := fmt.Sprintf("%s/%s/%s.wav", assetsFolder, audioAsset.category, audioAsset.fileName)
+		audioFileName := fmt.Sprintf(
+			"%s/%s/%s.wav", assetsFolder, audioAsset.category, audioAsset.fileName,
+		)
 		audioFile, err := os.Open(audioFileName)
 		if err != nil {
-			log.Fatal(err)
+			fmt.Println(err)
+			os.Exit(1)
 		}
 
 		streamer, format, err := wav.Decode(audioFile)
 		if err != nil {
-			log.Fatal(err)
+			fmt.Println(err)
+			os.Exit(1)
 		}
 		audioFormat = format
 
