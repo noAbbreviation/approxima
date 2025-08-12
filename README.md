@@ -1,6 +1,6 @@
-# Approxima Go
+# Approxima
 
-A command line program to approximately tell time (in chunks of 5 minutes) using Go.
+A command line program to approximately tell time (in chunks of 5 minutes).
 
 ## Presentation
 
@@ -15,6 +15,6 @@ TODO: Add video here
 - [x] Human readable time, or pipeable to other things
 - [x] No audio flag
 - [x] Capable of custom time telling (via piping of Unix Epoch Time)
+- [x] Embed default sound files to binary
 - [-] Background time watcher
-- Embed default sound files to binary
 - Help page

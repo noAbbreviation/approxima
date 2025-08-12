@@ -1,10 +1,12 @@
 package main
 
 import (
+	"embed"
 	"errors"
 	"flag"
 	"fmt"
 	"io"
+	"io/fs"
 	"os"
 	"strconv"
 	"strings"
@@ -16,7 +18,8 @@ import (
 )
 
 var (
-	assetsFolder string
+	//go:embed assets/*
+	embeddedAssets embed.FS
 
 	InvalidTimeFormatE = errors.New("Format should be Unix Time(in seconds).")
 )
@@ -34,11 +37,10 @@ type Asset struct {
 
 func main() {
 	shortFlag := flag.Bool("short", false, "Shorten the prompt")
-	assetsFolderArgs := flag.String("assets", "./assets", "Folder to show assets")
+	assetsFolderFlag := flag.String("assets", "", "Folder to show assets")
 	silentFlag := flag.Bool("silent", false, "Only print the prompt then exit")
 	flag.Parse()
 
-	assetsFolder = *assetsFolderArgs
 	defaultTime := time.Now()
 
 	if customTimeArg := flag.Arg(0); len(customTimeArg) != 0 {
@@ -213,15 +215,23 @@ func main() {
 		}
 	}()
 
+	assetsFolderName := "assets"
+	assetFS := fs.FS(embeddedAssets)
+
+	if assetsFolderArg := *assetsFolderFlag; len(assetsFolderArg) != 0 {
+		assetsFolderName = assetsFolderArg
+		assetFS = os.DirFS(".")
+	}
+
 	for _, audioAsset := range audioAssets {
 		if audioAsset.category == "" {
 			continue
 		}
 
 		audioFileName := fmt.Sprintf(
-			"%s/%s/%s.wav", assetsFolder, audioAsset.category, audioAsset.fileName,
+			"%s/%s/%s.wav", assetsFolderName, audioAsset.category, audioAsset.fileName,
 		)
-		audioFile, err := os.Open(audioFileName)
+		audioFile, err := assetFS.Open(audioFileName)
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
