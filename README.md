@@ -1,8 +1,16 @@
 # Approxima
 
-A command line program to approximately tell time (in chunks of 5 minutes).
+A command line program to loudly tell time (in chunks of 5 minutes).
 
-![Demo of approxima and its features](https://github.com/user-attachments/assets/90327ef6-41ab-4d21-b61c-ac108ab9288d)
+![Screenshot of approxima's core functionality](./docs/approxima-demo-screenshot.png)
+[Demo of approxima and its features(with sound)](https://github.com/user-attachments/assets/90327ef6-41ab-4d21-b61c-ac108ab9288d)
+
+## Features
+
+- Intuitive time telling using TTS
+- Pipeable into standard input and standard output
+- Embedded sound files (making it portable)
+- Customizable assets folder for custom sounds
 
 ## Installation
 
