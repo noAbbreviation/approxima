@@ -1,6 +1,6 @@
-module github.com/CrispDeserving/approxima-go
+module github.com/noAbbreviation/approxima
 
-go 1.22.0
+go 1.23.0
 
 require github.com/gopxl/beep/v2 v2.1.1
 

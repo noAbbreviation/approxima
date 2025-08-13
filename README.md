@@ -2,19 +2,39 @@
 
 A command line program to approximately tell time (in chunks of 5 minutes).
 
-## Presentation
+TODO: Insert the video here
 
-TODO: Add screenshot here
+## Installation
 
-TODO: Add video here
+If you have at least Go 1.23, install using the following command:
 
-## TODO
+```bash
+go install github.com/noAbbreviation/approxima
+```
 
-- [x] Shorter time telling Text-To-Speech
-- [x] Customizable assets folder
-- [x] Human readable time, or pipeable to other things
-- [x] No audio flag
-- [x] Capable of custom time telling (via piping of Unix Epoch Time)
-- [x] Embed default sound files to binary
-- [x] Help page
-- Documentation
+> [!NOTE]
+> A release may be in the works.
+
+## Usage
+
+```
+Usage:
+  approxima [OPTION]... [<HH:MM:SS>]
+
+Pipe UNIX time as substitute for command line arguments.
+
+Flags:
+-assets string
+    Asset folder to use.
+-h Display this help then exit.
+-help
+    Display this help then exit.
+-short
+    Use the shorter prompt format.
+-silent
+    Only print the prompt then exit.
+```
+
+## Credits
+
+Audio files generated from [ttsmaker](https://ttsmaker.com/).
