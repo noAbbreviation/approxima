@@ -16,5 +16,5 @@ TODO: Add video here
 - [x] No audio flag
 - [x] Capable of custom time telling (via piping of Unix Epoch Time)
 - [x] Embed default sound files to binary
-- [-] Background time watcher
-- Help page
+- [x] Help page
+- Documentation

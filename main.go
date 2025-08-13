@@ -35,20 +35,41 @@ type Asset struct {
 	category, fileName string
 }
 
+func printUsage() {
+	fmt.Println("Usage:")
+	fmt.Println("  approxima-go [OPTION]... [<HH:MM:SS>]")
+
+	fmt.Println("\nPipe UNIX time as substitute for command line arguments.")
+
+	fmt.Println("\nFlags: ")
+	flag.PrintDefaults()
+}
+
 func main() {
-	shortFlag := flag.Bool("short", false, "Shorten the prompt")
-	assetsFolderFlag := flag.String("assets", "", "Folder to show assets")
-	silentFlag := flag.Bool("silent", false, "Only print the prompt then exit")
+	_false := false
+	helpFlag := &_false
+
+	flag.BoolVar(helpFlag, "h", false, "Display this help then exit.")
+	flag.BoolVar(helpFlag, "help", false, "Display this help then exit.")
+
+	shortFlag := flag.Bool("short", false, "Use the shorter prompt format.")
+	assetsFolderFlag := flag.String("assets", "", "Asset folder to use.")
+	silentFlag := flag.Bool("silent", false, "Only print the prompt then exit.")
+
 	flag.Parse()
 
-	defaultTime := time.Now()
+	if *helpFlag {
+		printUsage()
+		os.Exit(0)
+	}
 
+	defaultTime := time.Now()
 	if customTimeArg := flag.Arg(0); len(customTimeArg) != 0 {
 		timeFmt := "15:04:05"
 
 		customTime, err := time.Parse(timeFmt, customTimeArg)
 		if err != nil {
-			fmt.Println("Error parsing the custom time: Accepted format is \"HH:MM:SS\"")
+			fmt.Println("Error parsing the custom time: Accepted format is <HH:MM:SS>")
 			os.Exit(1)
 		}
 
