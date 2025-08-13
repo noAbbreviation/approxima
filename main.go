@@ -21,7 +21,7 @@ var (
 	//go:embed assets/*
 	embeddedAssets embed.FS
 
-	InvalidTimeFormatE = errors.New("Format should be Unix Time(in seconds).")
+	InvalidTimeFormatE = errors.New("Format should be in Unix Time.")
 )
 
 type Approx struct {
@@ -36,12 +36,16 @@ type Asset struct {
 }
 
 func printUsage() {
-	fmt.Println("Usage:")
-	fmt.Println("  approxima-go [OPTION]... [<HH:MM:SS>]")
+	var b strings.Builder
 
-	fmt.Println("\nPipe UNIX time as substitute for command line arguments.")
+	fmt.Fprintln(&b, "Usage:")
+	fmt.Fprintln(&b, "  approxima [OPTION]... [<HH:MM:SS>]")
 
-	fmt.Println("\nFlags: ")
+	fmt.Fprintln(&b, "\nPipe UNIX time as substitute for command line arguments.")
+
+	fmt.Fprintln(&b, "\nFlags: ")
+
+	fmt.Fprintln(flag.CommandLine.Output(), b.String())
 	flag.PrintDefaults()
 }
 
