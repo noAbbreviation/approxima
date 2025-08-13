@@ -2,7 +2,7 @@
 
 A command line program to approximately tell time (in chunks of 5 minutes).
 
-TODO: Insert the video here
+![Demo of approxima and its features](https://github.com/user-attachments/assets/90327ef6-41ab-4d21-b61c-ac108ab9288d)
 
 ## Installation
 
