@@ -194,9 +194,14 @@ func main() {
 		}
 
 		promptItem := asset.fileName
-		if promptItem[0] == '-' {
+
+		if strings.HasPrefix(promptItem, "-") {
 			extractedPromptItem := strings.Split(promptItem, "-")
 			promptItem = extractedPromptItem[len(extractedPromptItem)-1]
+		}
+
+		if strings.Contains(promptItem, "-") {
+			promptItem = strings.ReplaceAll(promptItem, "-", " ")
 		}
 
 		prompt = append(prompt, promptItem)
