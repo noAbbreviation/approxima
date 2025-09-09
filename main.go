@@ -105,7 +105,7 @@ func main() {
 			return 30
 		}
 
-		hour = (hour + 1) % 24
+		hour += 1
 		return 60 - minute
 	}()
 
@@ -131,21 +131,24 @@ func main() {
 	moodSound := Asset{
 		"mood",
 		func() string {
-			var moodVariants map[bool]string
+			short := *shortFlag
 
-			if *shortFlag {
-				moodVariants = map[bool]string{
-					true:  "am",
-					false: "pm",
-				}
-			} else {
-				moodVariants = map[bool]string{
-					true:  "day",
-					false: "night",
-				}
+			switch {
+			case short && approxInstance.isAM:
+				return "am"
+
+			case short && !approxInstance.isAM:
+				return "pm"
+
+			case !short && approxInstance.isAM:
+				return "day"
+
+			default:
+				fallthrough
+
+			case !short && !approxInstance.isAM:
+				return "night"
 			}
-
-			return moodVariants[approxInstance.isAM]
 		}(),
 	}
 	isSound := Asset{"in-between", "is"}
@@ -277,7 +280,7 @@ func main() {
 		audioStreamers = append(audioStreamers, streamer)
 	}
 
-	var combinedStream beep.Streamer = audioStreamers[0]
+	combinedStream := beep.Streamer(audioStreamers[0])
 	for _, audioStream := range audioStreamers[1:] {
 		combinedStream = beep.Seq(combinedStream, audioStream)
 	}
