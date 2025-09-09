@@ -14,6 +14,10 @@ A command line program to loudly tell time (in chunks of 5 minutes).
 
 ## Installation
 
+> [!CAUTION]
+> This application has a (transitive) dependency on 'github.com/ebitengine/oto' for playing sounds.
+> Check the repo for its build prerequisites.
+
 If you have at least Go 1.23, install using the following command:
 
 ```bash
