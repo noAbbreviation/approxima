@@ -17,6 +17,8 @@ import (
 	"github.com/gopxl/beep/v2/wav"
 )
 
+var versionString = "[dev build]"
+
 var (
 	//go:embed assets/*
 	embeddedAssets embed.FS
@@ -56,11 +58,17 @@ func main() {
 	flag.BoolVar(helpFlag, "h", false, "Display this help then exit.")
 	flag.BoolVar(helpFlag, "help", false, "Display this help then exit.")
 
+	versionFlag := flag.Bool("version", false, "Print this program's version then quit.")
 	shortFlag := flag.Bool("short", false, "Use the shorter prompt format.")
 	assetsFolderFlag := flag.String("assets", "", "Asset folder to use.")
 	silentFlag := flag.Bool("silent", false, "Only print the prompt then exit.")
 
 	flag.Parse()
+
+	if *versionFlag {
+		fmt.Printf("approxima version %v\n", versionString)
+		os.Exit(0)
+	}
 
 	if *helpFlag {
 		printUsage()
