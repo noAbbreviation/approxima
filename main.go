@@ -17,7 +17,7 @@ import (
 	"github.com/gopxl/beep/v2/wav"
 )
 
-var versionString = "[dev build]"
+var versionString = "v1.0.0-dev"
 
 var (
 	//go:embed assets/*
